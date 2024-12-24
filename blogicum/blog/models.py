@@ -24,6 +24,7 @@ class BaseModel(models.Model):
     def __str__(self):
         return (f'{self.is_published=}, {self.created_at=}')
 
+
 class Category(BaseModel):
     title = models.CharField(max_length=256, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
@@ -97,7 +98,7 @@ class Post(BaseModel):
 
     def __str__(self):
         return self.title
-    
+
     def get_absolute_url(self):
         return reverse(
             'blog:post_detail', args=[self.pk]

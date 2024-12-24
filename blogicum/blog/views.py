@@ -23,7 +23,6 @@ def filter_posts(posts=None,
                  category_flag=None,
                  author_flag=None):
     """Фильтрует посты на основе параметров фильтрации."""
-
     if posts is None:
         posts = Post.objects.all()
 
@@ -58,6 +57,7 @@ class IndexListView(ListView):
     Фильтрует посты с помощью функции `filter_posts`,
     чтобы показать только опубликованные записи.
     """
+
     model = Post
     template_name = 'blog/index.html'
     paginate_by = POSTS_PER_PAGE
@@ -73,6 +73,7 @@ class PostDetailView(DetailView):
     Показывает подробную информацию о посте, включая комментарии.
     Также предоставляет форму для добавления комментариев.
     """
+
     model = Post
     template_name = 'blog/detail.html'
     paginate_by = POSTS_PER_PAGE
@@ -106,6 +107,7 @@ class CategoryListView(ListView):
     Представление для отображения постов в конкретной категории.
     Фильтрует посты по переданной категории и отображает их с пагинацией.
     """
+
     model = Post
     template_name = 'blog/category.html'
     paginate_by = POSTS_PER_PAGE
@@ -138,6 +140,7 @@ class ProfileListView(ListView):
     Представление для отображения профиля пользователя.
     Показывает все посты, написанные пользователем, с пагинацией.
     """
+
     model = Post
     template_name = 'blog/profile.html'
     paginate_by = POSTS_PER_PAGE
@@ -169,13 +172,15 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     Представление для обновления профиля пользователя.
     Позволяет пользователю редактировать свой профиль, включая его данные.
     """
+
     model = User
     template_name = 'blog/user.html'
     form_class = ProfileForm
 
     def get_object(self, queryset=None):
         """
-        Получает объект пользователя (текущего авторизованного пользователя).
+        Получает объект пользователя
+        (текущего авторизованного пользователя).
         """
         if queryset is None:
             queryset = self.get_queryset()
@@ -191,6 +196,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     Представление для создания нового поста.
     Создает новый пост, привязывая его к авторизованному пользователю.
     """
+
     model = Post
     template_name = 'blog/create.html'
     form_class = PostForm
@@ -212,6 +218,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     Представление для создания комментария к посту.
     Комментарий привязывается к конкретному посту и пользователю.
     """
+
     model = Comment
     form_class = CommentForm
     template_name = 'blog/detail.html'
@@ -236,6 +243,7 @@ class CommentUpdateDeleteMixin():
     Используется как для обновления, так и для удаления комментариев.
     Удобно использовать, соблюдается принцип DRY.
     """
+
     model = Comment
     template_name = 'blog/comment.html'
 
@@ -266,6 +274,7 @@ class CommentUpdateView(CommentUpdateDeleteMixin,
     Представление для обновления комментария.
     Позволяет пользователю редактировать свой комментарий.
     """
+
     form_class = CommentForm
 
 
@@ -276,6 +285,7 @@ class CommentDeleteView(CommentUpdateDeleteMixin,
     Представление для удаления комментария.
     Удаляет комментарий, если он принадлежит текущему пользователю.
     """
+
     pass
 
 
@@ -285,6 +295,7 @@ class PostUpdateDeleteMixin():
     Проверяет, является ли пользователь автором поста,
     перед выполнением действий.
     """
+
     model = Post
     template_name = 'blog/create.html'
     pk_url_kwarg = 'post_id'
@@ -305,6 +316,7 @@ class PostUpdateView(PostUpdateDeleteMixin, LoginRequiredMixin, UpdateView):
     Представление для редактирования поста.
     Позволяет автору поста редактировать его.
     """
+
     form_class = PostForm
 
 
