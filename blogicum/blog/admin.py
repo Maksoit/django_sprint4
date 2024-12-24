@@ -1,4 +1,7 @@
-# from django.contrib import admin
+"""
+Зарегестрировал в админке все модели согласно заданию.
+Всего 4 модели.
+"""
 from django.contrib import admin
 from .models import Category, Post, Location, Comment
 

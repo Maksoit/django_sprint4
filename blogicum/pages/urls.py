@@ -1,3 +1,4 @@
+"""В пути внес коррективы, т.к. сделал CBV"""
 from django.urls import path
 from . import views
 

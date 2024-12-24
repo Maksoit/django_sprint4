@@ -1,6 +1,9 @@
 """
-Вью функции заменены на CBV. Через классы мне работать оказалось удобней.
+Все вью функции переписаны на CBV, так как это удобный инструмент,
+о котором нам рассказали в курсе.
 Для редиректа используется reverse_lazy вместо reverse для избежания ошибок.
+Добавлены оптимизации запросов к БД.
+Добавлен LoginRequiredMixin, так как декоратор нельзя использовать с CBV.
 """
 from django.shortcuts import get_object_or_404, redirect
 from blog.models import Category, Post
@@ -18,10 +21,11 @@ from django.db.models import Count
 POSTS_PER_PAGE = 10
 
 
-def filter_posts(posts=None,
-                 filter_flag=True,
-                 category_flag=None,
-                 author_flag=None):
+def filter_posts(
+        posts=None,
+        filter_flag=True,
+        category_flag=None,
+        author_flag=None):
     """Фильтрует посты на основе параметров фильтрации."""
     if posts is None:
         posts = Post.objects.all()
@@ -52,10 +56,10 @@ def filter_posts(posts=None,
 
 class IndexListView(ListView):
     """
-    Представление для главной страницы блога.
-    Показывает список постов с пагинацией.
+    CBV для главной страницы блога.
+    Отвечает за список постов с пагинацией (под капотом).
     Фильтрует посты с помощью функции `filter_posts`,
-    чтобы показать только опубликованные записи.
+    чтобы показать только нужные записи.
     """
 
     model = Post
@@ -69,9 +73,10 @@ class IndexListView(ListView):
 
 class PostDetailView(DetailView):
     """
-    Представление для страницы конкретного поста.
-    Показывает подробную информацию о посте, включая комментарии.
-    Также предоставляет форму для добавления комментариев.
+    CBV для страницы конкретного поста.
+    Показывает подробную информацию о посте, включая комментарии
+    и форму для добавления комментариев
+    (Нужная информация включена в контекст).
     """
 
     model = Post
@@ -95,17 +100,17 @@ class PostDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         """Добавляет форму комментария и список комментариев в контекст."""
-        return dict(
-            **super().get_context_data(**kwargs),
-            form=CommentForm(),
-            comments=self.object.comments.select_related('author'),
-        )
+        context = super().get_context_data(**kwargs)
+        context['form'] = CommentForm()
+        context['comments'] = self.object.comments.select_related('author')
+        return context
 
 
 class CategoryListView(ListView):
     """
-    Представление для отображения постов в конкретной категории.
-    Фильтрует посты по переданной категории и отображает их с пагинацией.
+    CBV для отображения постов в определенной категории.
+    Фильтрует посты по переданной категории и отображает их.
+    Пагинация под капотом.
     """
 
     model = Post
@@ -137,8 +142,10 @@ class CategoryListView(ListView):
 
 class ProfileListView(ListView):
     """
-    Представление для отображения профиля пользователя.
-    Показывает все посты, написанные пользователем, с пагинацией.
+    CBV для профиля пользователя.
+    Показывает все посты, написанные пользователем,
+    включая снятые с публикации.
+    Пагинация под капотом.
     """
 
     model = Post
@@ -152,25 +159,26 @@ class ProfileListView(ListView):
     def get_queryset(self):
         """
         Получает все посты пользователя и фильтрует их,
-        если текущий пользователь не является этим пользователем.
+        если текущий пользователь не является этим пользователем,
+        с помощью функции filter_posts.
         """
         user = self.get_user()
         return filter_posts(
             user.posts.all(),
-            (self.request.user != user)
+            self.request.user != user
         )
 
     def get_context_data(self, **kwargs):
         """Добавляет информацию о профиле пользователя в контекст."""
-        prev_dict = super().get_context_data(**kwargs)
-        prev_dict['profile'] = self.get_user()
-        return prev_dict
+        context = super().get_context_data(**kwargs)
+        context['profile'] = self.get_user()
+        return context
 
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     """
-    Представление для обновления профиля пользователя.
-    Позволяет пользователю редактировать свой профиль, включая его данные.
+    CBV для обновления профиля пользователя.
+    Позволяет пользователю редактировать свой профиль.
     """
 
     model = User
@@ -193,8 +201,9 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     """
-    Представление для создания нового поста.
+    CBV для создания нового поста.
     Создает новый пост, привязывая его к авторизованному пользователю.
+    После успеха перенапрявляет на профиль автора.
     """
 
     model = Post
@@ -215,7 +224,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
     """
-    Представление для создания комментария к посту.
+    CBV для создания комментария к посту.
     Комментарий привязывается к конкретному посту и пользователю.
     """
 
@@ -274,7 +283,7 @@ class CommentUpdateView(CommentUpdateDeleteMixin,
                         LoginRequiredMixin,
                         UpdateView):
     """
-    Представление для обновления комментария.
+    CBV для обновления комментария.
     Позволяет пользователю редактировать свой комментарий.
     """
 
@@ -285,7 +294,7 @@ class CommentDeleteView(CommentUpdateDeleteMixin,
                         LoginRequiredMixin,
                         DeleteView):
     """
-    Представление для удаления комментария.
+    CBV для удаления комментария.
     Удаляет комментарий, если он принадлежит текущему пользователю.
     """
 
@@ -316,7 +325,7 @@ class PostUpdateDeleteMixin():
 
 class PostUpdateView(PostUpdateDeleteMixin, LoginRequiredMixin, UpdateView):
     """
-    Представление для редактирования поста.
+    CBV для редактирования поста.
     Позволяет автору поста редактировать его.
     """
 
@@ -325,7 +334,7 @@ class PostUpdateView(PostUpdateDeleteMixin, LoginRequiredMixin, UpdateView):
 
 class PostDeleteView(PostUpdateDeleteMixin, LoginRequiredMixin, DeleteView):
     """
-    Представление для удаления поста.
+    CBV для удаления поста.
     Удаляет пост, если он принадлежит текущему пользователю.
     """
 

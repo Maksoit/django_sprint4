@@ -1,3 +1,7 @@
+"""
+Добавил модель Comment и модифицировал другие модели.
+Часть моделей взял из своего 3 спринта.
+"""
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -7,6 +11,11 @@ User = get_user_model()
 
 
 class BaseModel(models.Model):
+    """
+    Абстрактная модель, которая используется для моделей,
+    которым нужны содержащиеся поля.
+    """
+
     is_published = models.BooleanField(
         default=True,
         verbose_name='Опубликовано',
@@ -21,11 +30,13 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-    def __str__(self):
-        return (f'{self.is_published=}, {self.created_at=}')
-
 
 class Category(BaseModel):
+    """
+    Модель для категорий, к которым могут принадлежать посты.
+    Магический метод __str__ для правильного отображения.
+    """
+
     title = models.CharField(max_length=256, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
 
@@ -48,6 +59,10 @@ class Category(BaseModel):
 
 
 class Location(BaseModel):
+    """
+    Модель для местоположений, к которым могут принадлежать посты.
+    Магический метод __str__ для правильного отображения.
+    """
     name = models.CharField(max_length=256, verbose_name='Название места')
 
     def __str__(self):
@@ -59,6 +74,12 @@ class Location(BaseModel):
 
 
 class Post(BaseModel):
+    """
+    Модель для публикаций в блоге.
+    Кроме полей содержит связь с автором (1:1),
+    категорией (1:1) и местоположением(1:1).
+    """
+
     title = models.CharField(max_length=256, verbose_name='Заголовок')
     text = models.TextField(verbose_name='Текст')
 
@@ -111,6 +132,11 @@ class Post(BaseModel):
 
 
 class Comment(models.Model):
+    """
+    Модель для комментариев к публикациям.
+    Связана с пользователем(1:1) и публикацией(1:1).
+    """
+
     text = models.TextField('Текст комментария')
 
     post = models.ForeignKey(

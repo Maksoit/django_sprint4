@@ -1,4 +1,7 @@
-"""Добавлены вьюшки для отображения кастомных страниц ошибок."""
+"""
+Переписал отображение страниц about и rules на CBV.
+Добавил кастомные страницы ошибок.
+"""
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
@@ -13,8 +16,6 @@ class Rules(TemplateView):
 
 def page_not_found(request, exception):
     """Возвращает кастомную страниццу 404."""
-    # Переменная exception содержит отладочную информацию;
-    # выводить её в шаблон пользовательской страницы 404 мы не станем.
     return render(request, 'pages/404.html', status=404)
 
 
