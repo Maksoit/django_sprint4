@@ -231,7 +231,10 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        """Возвращает URL для редиректа после успешного создания комментария."""
+        """
+        Возвращает URL для редиректа после
+        успешного создания комментария.
+        """
         return reverse_lazy(
             'blog:post_detail',
             args=[self.kwargs[self.pk_url_kwarg]])
